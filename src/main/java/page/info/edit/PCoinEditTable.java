@@ -18,6 +18,7 @@ import utilpc.UtilPC;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
 import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -51,7 +52,7 @@ public class PCoinEditTable extends Page {
                 setSelectionBackground(MainBCU.light ? Theme.LIGHT.NIMBUS_SELECT_BG : Theme.DARK.NIMBUS_SELECT_BG);
             setEnabled(edit);
             setListIcons();
-            ints = IntStream.rangeClosed(PCoin.PCOIN_MIN, PCoin.PCOIN_MAX)
+            ints = IntStream.rangeClosed(PCoin.TALENT_ID_MIN, PCoin.TALENT_ID_MAX)
                     .filter(v -> v != 29 && v != 42 && v != 43).toArray();
         }
         protected void setListIcons() {
@@ -165,7 +166,7 @@ public class PCoinEditTable extends Page {
             if (changing)
                 return;
             changing = true;
-            unit.pcoin.info.get(ind)[13] = soup.isSelected() ? 1 : 0;
+            unit.pcoin.data.get(ind)[13] = soup.isSelected() ? 1 : 0;
             pcep.resetList(ind);
             changing = false;
         });
@@ -175,7 +176,7 @@ public class PCoinEditTable extends Page {
                 return;
             changing = true;
             int m = CommonStatic.parseIntN(maxt.getText());
-            unit.pcoin.info.get(ind)[1] = unit.pcoin.max[ind] = Math.max(m, 1);
+            unit.pcoin.data.get(ind)[1] = Math.max(m, 1);
             reset(false);
             changing = false;
         });
@@ -202,7 +203,7 @@ public class PCoinEditTable extends Page {
                     changing = false;
                     return;
                 }
-                int[] data = unit.pcoin.info.get(ind);
+                int[] data = unit.pcoin.data.get(ind);
                 data[2 + finalI * 2] = a;
                 data[3 + finalI * 2] = b;
                 reset(false);
@@ -216,7 +217,7 @@ public class PCoinEditTable extends Page {
                 return;
             changing = true;
             TalentInfo ti = nlst.getSelectedValue();
-            sett.setEnabled(ti != null && unit.pcoin.info.get(ind)[0] != ti.getValue());
+            sett.setEnabled(ti != null && unit.pcoin.data.get(ind)[0] != ti.getValue());
             changing = false;
         });
 
@@ -227,8 +228,8 @@ public class PCoinEditTable extends Page {
             TalentInfo ti = nlst.getSelectedValue();
             int[] base = BASE_TALENT.clone();
             base[0] = ti.getValue();
-            base[1] = unit.pcoin.max[ind] = Data.PC_CORRES[base[0]][2] > 0 ? 10 : 1;
-            unit.pcoin.info.set(ind, base);
+            base[1] = Data.PC_CORRES[base[0]][2] > 0 ? 10 : 1;
+            unit.pcoin.data.set(ind, base);
             reset(true);
             changing = false;
         });
@@ -237,9 +238,8 @@ public class PCoinEditTable extends Page {
             if (changing)
                 return;
             changing = true;
-            unit.pcoin.trait.clear();
-            if ((unit.pcoin.info.get(ind)[12] = tlst.getSelectedIndex()) > -1)
-                unit.pcoin.trait.addAll(tlst.getSelectedValuesList());
+            if ((unit.pcoin.data.get(ind)[12] = tlst.getSelectedIndex()) > -1)
+                unit.pcoin.traits[ind] = tlst.getSelectedValuesList().toArray(new Trait[0]);
             resetList();
             changing = false;
         });
@@ -253,7 +253,7 @@ public class PCoinEditTable extends Page {
             TalentInfo dat = new TalentInfo(Interpret.PCTX[i], i);
             if (talents.contains(dat) || unit.pcoin == null)
                 break;
-            if (unit.pcoin.info.stream().anyMatch(v -> unit.pcoin.info.indexOf(v) != ind && v[0] == i))
+            if (unit.pcoin.data.stream().anyMatch(v -> unit.pcoin.data.indexOf(v) != ind && v[0] == i))
                 continue;
 
             if (type[0] == Data.PC_BASE)
@@ -264,16 +264,16 @@ public class PCoinEditTable extends Page {
                 talents.add(dat);
             else if (type[0] == Data.PC_TRAIT && unit.traits.stream().noneMatch(ut -> type[1] == ut.id.id))
                 traits.add(dat);
-        }
-        if (unit.pcoin == null)
-            talents.addAll(traits);
-        else
-            talents.addAll(traits.stream().filter(t -> unit.pcoin.trait.stream().noneMatch(pt -> Data.PC_CORRES[t.getValue()][1] == pt.id.id)).collect(Collectors.toList()));
+        }  // todo: pcoin trait
+//        if (unit.pcoin == null)
+//            talents.addAll(traits);
+//        else
+//            talents.addAll(traits.stream().filter(t -> unit.pcoin.trait.stream().noneMatch(pt -> Data.PC_CORRES[t.getValue()][1] == pt.id.id)).collect(Collectors.toList()));
         nlst.setListData(talents);
 
         if (unit.pcoin != null && ind != -1) {
             for (TalentInfo ti : talents) {
-                if (ti.getValue() == unit.pcoin.info.get(ind)[0]) {
+                if (ti.getValue() == unit.pcoin.data.get(ind)[0]) {
                     nlst.setSelectedValue(ti, true);
                     break;
                 }
@@ -289,8 +289,8 @@ public class PCoinEditTable extends Page {
                     vt.addAll(p.traits.getList());
             vt.removeIf(t -> unit.traits.stream().anyMatch(ut -> t == ut));
             tlst.setListData(vt);
-            if (unit.pcoin.info.get(ind)[12] > -1)
-                tlst.setSelectedIndices(unit.pcoin.trait.stream().mapToInt(vt::indexOf).toArray());
+            if (unit.pcoin.data.get(ind)[12] > -1)
+                tlst.setSelectedIndices(Arrays.stream(unit.pcoin.traits[ind]).mapToInt(vt::indexOf).toArray());
         }
     }
 
@@ -320,11 +320,11 @@ public class PCoinEditTable extends Page {
                 modif.setEnabled(false);
         } else {
             unit.pcoin.verify();
-            int[] data = unit.pcoin.info.get(ind);
+            int[] data = unit.pcoin.data.get(ind);
             int[] type = Data.PC_CORRES[data[0]];
             setLabel(type, ind);
             nlst.setEnabled(editable);
-            tlst.setEnabled(editable && (unit.pcoin.info.stream().noneMatch(d -> d[12] > -1) || data[12] > -1));
+            tlst.setEnabled(editable && (unit.pcoin.data.stream().noneMatch(d -> d[12] > -1) || data[12] > -1));
             soup.setEnabled(editable);
             soup.setSelected(data[13] == 1);
 

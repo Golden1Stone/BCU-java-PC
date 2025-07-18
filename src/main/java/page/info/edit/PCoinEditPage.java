@@ -62,17 +62,14 @@ public class PCoinEditPage extends Page {
             if (unit.pcoin == null)
                 unit.pcoin = new PCoin(unit);
 
-            int size = unit.pcoin.info.size(); // 5
+            int size = unit.pcoin.getTalentCount();
             int[] base = PCoinEditTable.BASE_TALENT.clone();
-            for (int i = 0; i < unit.pcoin.info.size(); i++)
-                for (int info : unit.pcoin.info.stream().sorted((a, b) -> b[0] - a[0]).mapToInt(a -> a[0]).toArray())
+            for (int i = 0; i < unit.pcoin.getTalentCount(); i++)
+                for (int info : unit.pcoin.data.stream().sorted((a, b) -> b[0] - a[0]).mapToInt(a -> a[0]).toArray())
                     if (info == base[0])
                         base[0]++;
             base[1] = Data.PC_CORRES[base[0]][2] > 0 ? 10 : 1;
-            unit.pcoin.info.add(base);
-            unit.pcoin.max = new int[size + 1];
-            for (int i = 0; i < size + 1; i++)
-                unit.pcoin.max[i] = unit.pcoin.info.get(i)[1];
+            unit.pcoin.data.add(base);
             setCoins(size);
             changing = false;
         });
@@ -84,14 +81,9 @@ public class PCoinEditPage extends Page {
             if (changing)
                 return;
             changing = true;
-            unit.pcoin.info.remove(coin.getSelectedIndex());
-            if (unit.pcoin.info.size() == 0)
+            unit.pcoin.data.remove(coin.getSelectedIndex());
+            if (unit.pcoin.data.isEmpty())
                 unit.pcoin = null;
-            else {
-                unit.pcoin.max = new int[unit.pcoin.info.size()];
-                for (int i = 0; i < unit.pcoin.info.size(); i++)
-                    unit.pcoin.max[i] = unit.pcoin.info.get(i)[1];
-            }
 
             setCoins(coin.getSelectedIndex());
             changing = false;
@@ -123,9 +115,9 @@ public class PCoinEditPage extends Page {
         if (unit.pcoin != null) {
             Vector<String> talents = new Vector<>();
             PCoin p = unit.pcoin;
-            p.update();
-            for (int i = 0; i < p.max.length; i++)
-                talents.add("talent " + (i + 1) + (unit.pcoin.info.get(i)[13] == 1 ? "*: " : ": ") + UtilPC.getPCoinAbilityText(p, i));
+            p.updateMax();
+            for (int i = 0; i < p.getTalentCount(); i++)
+                talents.add("talent " + (i + 1) + (unit.pcoin.data.get(i)[13] == 1 ? "*: " : ": ") + UtilPC.getPCoinAbilityText(p, i));
             coin.setListData(talents);
             coin.setSelectedIndex(Math.min(ind, talents.size() - 1));
         } else {
@@ -135,7 +127,7 @@ public class PCoinEditPage extends Page {
 
     protected void setCoins(int ind) {
         resetList(ind);
-        add.setEnabled(editable && (unit.pcoin == null || unit.pcoin.max.length < 8));
+        add.setEnabled(editable && (unit.pcoin == null || unit.pcoin.getTalentCount() < 8));
         rem.setEnabled(editable && coin.getSelectedIndex() != -1);
         pcet.setData(coin.getSelectedIndex());
     }

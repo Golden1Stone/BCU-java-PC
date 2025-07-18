@@ -244,7 +244,7 @@ public class FormEditPage extends EntityEditPage {
 		ueb.setData(cu.abi, data.traits);
 		if (cu.getPCoin() != null) {
 			cu.pcoin.verify();
-			cu.pcoin.update();
+			cu.pcoin.updateMax();
 		}
 	}
 

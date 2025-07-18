@@ -11,7 +11,6 @@ import common.util.pack.Background;
 import common.util.stage.Music;
 import common.util.unit.Form;
 import common.util.unit.Level;
-import common.util.unit.Trait;
 import io.BCMusic;
 import io.BCUWriter;
 import page.MainFrame;
@@ -22,6 +21,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Arrays;
 
 public class UtilPC {
 
@@ -200,29 +200,19 @@ public class UtilPC {
 		if (pc == null) {
 			return new String[]{"Lv." + lv.getLv() + " + " + lv.getPlusLv(), ""};
 		} else {
-			String[] TraitsHolder = new String[pc.trait.size()];
-
-			for (int i = 0 ; i < pc.trait.size() ; i++) {
-				Trait trait = pc.trait.get(i);
-				if (trait.BCTrait)
-					TraitsHolder[i] = Interpret.TRAIT[trait.id.id];
-				else
-					TraitsHolder[i] = trait.name;
-			}
-
 			StringBuilder lab = new StringBuilder();
 			StringBuilder str = new StringBuilder("Lv." + lv.getLv() + " + " + lv.getPlusLv() + ", {");
 
-			for (int i = 0; i < pc.info.size(); i++) {
+			for (int i = 0; i < pc.getTalentCount(); i++) {
 				str.append(lv.getTalents()[i]);
-				if (pc.info.get(i)[13] == 1)
+				if (pc.data.get(i)[2] == 1)
 					str.append("*");
 
 				lab.append(getPCoinAbilityText(pc, i));
-				if (pc.info.get(i)[12] > 0)
-					lab.append(" [").append(Interpret.getTrait(TraitsHolder, 0)).append("]").append(" ");
+				if (pc.traits[i].length > 0)
+					lab.append(" [").append(Interpret.getTrait(Arrays.stream(pc.traits[i]).map(t -> t.BCTrait ? Interpret.TRAIT[t.id.id] : t.name).toArray(String[]::new), 0)).append("]");
 
-				if(i < pc.info.size() - 1) {
+				if(i < pc.getTalentCount() - 1) {
 					str.append(", ");
 					lab.append(", ");
 				}
@@ -235,10 +225,10 @@ public class UtilPC {
 	}
 
 	public static String getPCoinAbilityText(PCoin pc, int index) {
-		if(index < 0 || index >= pc.info.size())
+		if(index < 0 || index >= pc.getTalentCount())
 			return null;
 
-		return Interpret.PCTX[pc.info.get(index)[0]];
+		return Interpret.PCTX[pc.data.get(index)[0]];
 	}
 
 	public static int damerauLevenshteinDistance(String src, String compare) {
