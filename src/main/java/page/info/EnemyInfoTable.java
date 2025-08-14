@@ -176,11 +176,11 @@ public class EnemyInfoTable extends Page {
 		ArrayList<Trait> trs = e.de.getTraits();
 		trs.sort(Comparator.comparingInt(t -> t.id.id));
 		trs.sort(Comparator.comparing(t -> t.id.pack));
-		trs.sort(Comparator.comparing(t -> !t.BCTrait));
+		trs.sort(Comparator.comparing(t -> !t.id.pack.equals("000000")));
 		String[] TraitBox = new String[trs.size()];
 		for (int i = 0; i < trs.size(); i++) {
 			Trait trait = e.de.getTraits().get(i);
-			if (trait.BCTrait)
+			if (trait.id.pack.equals("000000"))
 				TraitBox[i] = Interpret.TRAIT[trait.id.id];
 			else
 				TraitBox[i] = trait.name;
@@ -311,9 +311,9 @@ public class EnemyInfoTable extends Page {
 					+ " units inside the base<br>once it passes that threshold."
 					+ "</html>");
 		String eDesc = e.getExplaination().replace("<br>", "\n");
-		if (eDesc.replace("\n", "").length() > 0)
+		if (!eDesc.replace("\n", "").isEmpty())
 			add(desc);
-		descr.setText(e.toString().replace(Data.trio(e.id.id) + " - ", "") + (e.de.getTraits().size() > 0 && !e.de.getTraits().contains(UserProfile.getBCData().traits.get(Data.TRAIT_WHITE)) ? " (" + Interpret.getTrait(TraitBox, 0) + ")" : "") + (e.de.getStar() > 2 ? " (Cool Dude)" : "") + "\n" + eDesc);
+		descr.setText(e.toString().replace(Data.trio(e.id.id) + " - ", "") + (!e.de.getTraits().isEmpty() && !e.de.getTraits().contains(UserProfile.getBCData().traits.get(Data.TRAIT_WHITE)) ? " (" + Interpret.getTrait(TraitBox, 0) + ")" : "") + (e.de.getStar() > 2 ? " (Cool Dude)" : "") + "\n" + eDesc);
 		descr.setEditable(false);
 		reset();
 		addListeners();

@@ -164,8 +164,7 @@ public class ComparePage extends Page {
 
         Collection<PackData.UserPack> pacs = UserProfile.getUserPacks();
         for (PackData.UserPack pack : pacs)
-            for (Trait t : pack.traits)
-                trait.list.add(t);
+            trait.list.addAll(pack.traits.getList());
 
         trait.setListData();
         trait.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -651,11 +650,11 @@ public class ComparePage extends Page {
             ArrayList<Trait> trs = m.getTraits();
             trs.sort(Comparator.comparingInt(t -> t.id.id));
             trs.sort(Comparator.comparing(t -> t.id.pack));
-            trs.sort(Comparator.comparing(t -> !t.BCTrait));
+            trs.sort(Comparator.comparing(t -> !t.id.pack.equals("000000")));
             String[] TraitBox = new String[trs.size()];
             for (int t = 0; t < trs.size(); t++) {
                 Trait trait = m.getTraits().get(t);
-                if (trait.BCTrait)
+                if (trait.id.pack.equals("000000"))
                     TraitBox[t] = Interpret.TRAIT[trait.id.id];
                 else
                     TraitBox[t] = trait.name;

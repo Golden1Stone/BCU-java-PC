@@ -200,6 +200,16 @@ public class UtilPC {
 		if (pc == null) {
 			return new String[]{"Lv." + lv.getLv() + " + " + lv.getPlusLv(), ""};
 		} else {
+			String[] TraitsHolder = new String[pc.trait.size()];
+
+			for (int i = 0 ; i < pc.trait.size() ; i++) {
+				Trait trait = pc.trait.get(i);
+				if (trait.id.pack.equals("000000"))
+					TraitsHolder[i] = Interpret.TRAIT[trait.id.id];
+				else
+					TraitsHolder[i] = trait.name;
+			}
+
 			StringBuilder lab = new StringBuilder();
 			StringBuilder str = new StringBuilder("Lv." + lv.getLv() + " + " + lv.getPlusLv() + ", {");
 
