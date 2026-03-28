@@ -29,8 +29,9 @@ public strictfp class MainLocale {
 	private static final ResourceBundle[] RENS = new ResourceBundle[4];
 
 	static {
-		for (int i = 0; i < 4; i++)
-			RENS[i] = ResourceBundle.getBundle(RENN[i], Locale.ROOT, new URLClassLoader(new URL[]{MainLocale.class.getClassLoader().getResource(RENN[i]+".properties")}));
+		for (int i = 0; i < 4; i++){
+			RENS[i] = ResourceBundle.getBundle(RENN[i], Locale.ROOT, new URLClassLoader(new URL[]{MainLocale.class.getClassLoader().getResource("main/resources/")}));
+		}
 	}
 
 	public static boolean exLang, exTTT;
