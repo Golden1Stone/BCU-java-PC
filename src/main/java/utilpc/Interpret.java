@@ -13,6 +13,7 @@ import common.util.Data.Proc.ProcItem;
 import common.util.lang.Formatter;
 import common.util.lang.MultiLangCont;
 import common.util.lang.ProcLang;
+import common.util.stage.CharaGroup;
 import common.util.stage.MapColc;
 import common.util.stage.MapColc.DefMapColc;
 import common.util.stage.Stage;
@@ -21,6 +22,7 @@ import common.util.stage.info.DefStageInfo;
 import common.util.stage.info.StageInfo;
 import common.util.unit.Combo;
 import common.util.unit.Enemy;
+import common.util.unit.Unit;
 import io.BCJSON;
 import main.MainBCU;
 import page.MainLocale;
@@ -35,6 +37,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Interpret extends Data {
 
@@ -101,10 +104,21 @@ public class Interpret extends Data {
 
     /**
      * combo string formatter
+     * ---
+     * 1st num (modification):
+     * 1 = add
+     * 2 = minus
+     * ---
+     * 2nd num (unit):
+     * -1 = do not include number
+     * 0 = include number with no units
+     * 1 = x%
+     * 2 = x frames
+     * 3 = Lv. x
      */
     private static final int[][] CDC = {{1, 1}, {1, 1}, {1, 1}, {1, 1}, {1, 3}, {1, 0}, {1, 1}, {2, 1},
             {1, 1}, {1, 1}, {1, 1}, {2, 2}, {1, 1}, {1, 1}, {1, 1}, {1, 1}, {1, 1}, {1, 1}, {1, 1},
-            {1, 1}, {1, 1}, {1, 1}, {1, 1}, {1, 1}, {1, 1}};
+            {1, 1}, {1, 1}, {1, 1}, {1, 1}, {1, 1}, {1, 1}, {1, -1}, {1, -1}, {2, 1}};
 
     //Filters abilities and procs that are available for enemies. Also gives better organization to the UI
     public static final int[] EABIIND = {ABI_CSUR, ABI_WAVES, ABI_SNIPERI, ABI_TIMEI, ABI_GHOST, ABI_GLASS, ABI_THEMEI};
@@ -125,7 +139,7 @@ public class Interpret extends Data {
             Data.P_IMUVOLC, Data.P_IMUSPEED, Data.P_IMUSUMMON, Data.P_DEATHSURGE, Data.P_SPIRIT, Data.P_BLAST, Data.P_IMUBLAST,Data.P_MINIDEATHSURGE };
 
     private static final DecimalFormat df;
-    public static String[] lvl;
+    public static String[] lvl = new String[] { "Sm", "M", "L", "XL", "XXL", "EX" };
 
     static {
         redefine();
@@ -339,7 +353,7 @@ public class Interpret extends Data {
         int[] res = CommonStatic.getBCAssets().filter[n];
         String[] strs = new String[res.length];
         for (int i = 0; i < res.length; i++)
-            strs[i] = COMN[res[i]];
+            strs[i] = Interpret.getComboName(res[i]);
         return strs;
     }
 
@@ -691,7 +705,7 @@ public class Interpret extends Data {
         ATKCONF = Page.get(MainLocale.UTIL, "aa", 8);
         TREA = Page.get(MainLocale.UTIL, "t", 51);
         COMF = Page.get(MainLocale.UTIL, "na", 6);
-        COMN = Page.get(MainLocale.UTIL, "nb", 25);
+        COMN = Page.get(MainLocale.UTIL, "nb", 28);
         TCTX = Page.get(MainLocale.UTIL, "tc", 6);
         PCTX = Page.get(MainLocale.UTIL, "aq", PC_CORRES.length);
         EABI = new String[EABIIND.length];
@@ -711,12 +725,14 @@ public class Interpret extends Data {
     }
 
     private static String combo(int t, int val, BasisSet b) {
+        if (CDC.length <= t)
+            return "unknown modifier " + val;
         int[] con = CDC[t];
         if (t == C_RESP) {
             double research = (b.t().tech[LV_RES] - 1) * 6 + b.t().trea[T_RES] * 0.3;
-            return COMN[t] + " " + CDP[0][con[0]] + CDP[1][con[1]].replaceAll("_", String.valueOf(research * val / 100));
+            return getComboName(t) + (con[1] == -1 ? "" : " " + CDP[0][con[0]] + CDP[1][con[1]].replaceAll("_", String.valueOf(research * val / 100)));
         } else {
-            return COMN[t] + " " + CDP[0][con[0]] + CDP[1][con[1]].replaceAll("_", String.valueOf(val));
+            return getComboName(t) + (con[1] == -1 ? "" : " " + CDP[0][con[0]] + CDP[1][con[1]].replaceAll("_", String.valueOf(val)));
         }
     }
 
@@ -1222,5 +1238,17 @@ public class Interpret extends Data {
         ans.append("</table></html>");
 
         return ans.toString();
+    }
+
+    public static String getComboName(int ind) {
+        if (COMN.length > ind)
+            return COMN[ind];
+        else
+            return "nb" + ind;
+    }
+
+    public static String getGroupTooltip(CharaGroup group) {
+        String type = Page.get(0, group.type == 0 ? "include" : "exclude");
+        return "<html>" + type + "<br>" + group.set.stream().map(Unit::toString).collect(Collectors.joining("<br>")) + "</html>";
     }
 }

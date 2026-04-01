@@ -1,10 +1,9 @@
 package page.basis;
 
 import common.battle.BasisSet;
-import common.battle.LineUp;
+import common.util.stage.CharaGroup;
 import common.util.unit.Combo;
 import common.util.unit.Form;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import page.MainLocale;
 import page.Page;
 import page.support.SortTable;
@@ -28,20 +27,36 @@ public class ComboListTable extends SortTable<Combo> {
 	public static void redefine() {
 		String str = MainLocale.getLoc(MainLocale.INFO, "unit");
 		tit = new String[] { "name", "Lv.", MainLocale.getLoc(MainLocale.INFO, "desc"),
-				MainLocale.getLoc(MainLocale.INFO, "occu"), str + " 1", str + " 2", str + " 3", str + " 4",
+				MainLocale.getLoc(MainLocale.INFO, "group"), str + " 1", str + " 2", str + " 3", str + " 4",
 				str + " 5" };
-		Interpret.lvl = new String[] { "Sm", "M", "L", "XL" };
 	}
 
-	@NonNull
-	private LineUp lu;
 	private final Page fr;
 
-	public ComboListTable(Page p, @NonNull LineUp line) {
+	public ComboListTable(Page p) {
 		super(tit);
 
 		fr = p;
-		lu = line;
+
+		setDefaultRenderer(CharaGroup.class, new DefaultTableCellRenderer() {
+
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public Component getTableCellRendererComponent(JTable l, Object o, boolean s, boolean f, int r, int c) {
+				JLabel jl = (JLabel) super.getTableCellRendererComponent(l, c, s, f, r, c);
+				CharaGroup group = (CharaGroup) o;
+				if (group != null) {
+					jl.setText(group.name.isEmpty() ? group.id.toString() : group.name + " - " + group.id);
+					jl.setToolTipText(Interpret.getGroupTooltip(group));
+				} else {
+					jl.setText("");
+					jl.setToolTipText(null);
+				}
+				return jl;
+			}
+
+		});
 
 		setDefaultRenderer(Combo.class, new DefaultTableCellRenderer() {
 
@@ -104,21 +119,27 @@ public class ComboListTable extends SortTable<Combo> {
 		c = lnk[c];
 		if (c == 2)
 			return Combo.class;
-		if (c > 3)
+		else if (c == 3)
+			return CharaGroup.class;
+		else if (c > 3)
 			return Form.class;
-		return String.class;
+		else
+			return String.class;
 	}
 
 	@Override
 	protected int compare(Combo e0, Combo e1, int c) {
+		c = lnk[c];
 		if (c == 0) {
 			return e0.getID().compareTo(e1.getID());
 		} else if (c == 2) {
 			return Integer.compare(e0.type, e1.type);
 		} else if (c == 3) {
-			int o0 = lu.occupance(e0);
-			int o1 = lu.occupance(e1);
-			return Integer.compare(o0, o1);
+			if (e0.group == null)
+				return -1;
+			else if (e1.group == null)
+				return 1;
+			return e0.group.id.compareTo(e1.group.id);
 		} else if (c >= 4 && c <= 8) {
 			if (e0.forms.length <= c - 3)
 				return -1;
@@ -141,16 +162,14 @@ public class ComboListTable extends SortTable<Combo> {
 		if (c == 2)
 			return t;
 		if (c == 3)
-			return lu.occupance(t);
+			return t.group;
 		if (t.forms.length > c - 4) {
 			return t.forms[c - 4];
 		}
 		return null;
 	}
 
-	public void setLU(@NonNull LineUp lu) {
-		this.lu = lu;
-
+	public void refresh() {
 		revalidate();
 		repaint();
 	}
