@@ -340,16 +340,16 @@ public abstract class EntityEditPage extends Page implements SwingEditor.EditCtr
 	@Override
 	protected void resized(int x, int y) {
 		setSize(x, y);
-		set(back, x, y, 0, 0, 200, 50); //Back
-		set(lhp, x, y, 50, 100, 100, 50); //HP
+		set(back, x, y, 0, 0, 200, 50);
+		set(lhp, x, y, 50, 100, 100, 50);
 		set(fhp, x, y, 150, 100, 200, 50);
-		set(lhb, x, y, 50, 150, 100, 50); //Hitback
+		set(lhb, x, y, 50, 150, 100, 50);
 		set(fhb, x, y, 150, 150, 200, 50);
-		set(lsp, x, y, 50, 200, 100, 50); //Speed
+		set(lsp, x, y, 50, 200, 100, 50);
 		set(fsp, x, y, 150, 200, 200, 50);
-		set(lwp, x, y, 50, 250, 100, 50); //Willpower
+		set(lwp, x, y, 50, 250, 100, 50);
 		set(fwp, x, y, 150, 250, 200, 50);
-		set(lwd, x, y, 50, 300, 100, 50); //Width
+		set(lwd, x, y, 50, 300, 100, 50);
 		set(fwd, x, y, 150, 300, 200, 50);
 
 		set(jspm, x, y, 1850, 100, 350, 900);

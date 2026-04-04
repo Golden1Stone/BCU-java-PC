@@ -56,7 +56,7 @@ public class BCUReader extends DataIO {
 	}
 
 	public static void readInfo() {
-		File f = new File(CommonStatic.ctx.getBCUFolder(), "user/config.json");
+		File f = new File(CommonStatic.ctx.getBCUFolder(), "./user/config.json");
 		if (f.exists()) {
 			try (Reader r = new InputStreamReader(Files.newInputStream(f.toPath()), StandardCharsets.UTF_8)) {
 				JsonElement je = JsonParser.parseReader(r);

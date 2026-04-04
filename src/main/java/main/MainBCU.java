@@ -67,9 +67,9 @@ public class MainBCU {
 		@Override
 		public InputStream getLangFile(String file) {
 			File f = new File(getBCUFolder(),
-					"assets/lang/" + CommonStatic.getConfig().lang.code + "/" + file);
+					"./assets/lang/" + CommonStatic.getConfig().lang.code + "/" + file);
 			if (!f.exists()) {
-				String path = "main/java/common/util/lang/assets/" + file;
+				String path = "common/util/lang/assets/" + file;
 				return ClassLoader.getSystemResourceAsStream(path);
 			}
 			return Data.err(() -> new FileInputStream(f));
